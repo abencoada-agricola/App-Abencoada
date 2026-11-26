@@ -1,3 +1,6 @@
+## Situação atual — 26/11/2026
+
+A API oficial é https://gmaiserp-api.gmais-sistemas.com.br, no modo api-v1. O banco definido é APP_ABENCOADA e a conexão SQL é responsabilidade do provedor. O site e o APK oficial 2.0.79 tiveram autenticação e consultas verificadas. As origens do site e https://localhost responderam com CORS autorizado. Consulte o README da raiz para a configuração atual. Os relatos de preparação e bloqueios abaixo registram estados anteriores.
 ## 2026-11-26 — URL pública da API para teste
 
 Site e Android usam por padrão o cliente api-v1 com https://gmaiserp-api.gmais-sistemas.com.br. Variáveis explícitas continuam selecionando o backend para builds existentes. Os workflows têm o mesmo padrão, com possibilidade de substituição pelas variáveis do repositório.

@@ -1,3 +1,6 @@
+## 2026-11-26 — Ambiente oficial e documentação publicada
+
+API v1 em https://gmaiserp-api.gmais-sistemas.com.br adotada para o site e o Android, com APP_ABENCOADA como banco definido pelo projeto e conexão SQL administrada pelo provedor. O README registra URL, login, CORS, builds e publicação. Site e APK 2.0.79 tiveram login e consultas verificados. CORS de https://localhost liberado. A homologação de gravações reais e do cadastro de frentes permanece pendente.
 ## 2026-11-26 — Publicação para teste da API
 
 Suíte completa aprovada no checkout preparado sobre origin/main. Builds web e mobile concluídos. O preflight do GitHub Pages respondeu 204 com Access-Control-Allow-Origin correspondente. A origem Android https://localhost continua com 403. O teste autenticado de leitura anterior confirmou login e bootstrap. Publicação não homologa gravações reais nem o campo frente de trabalho no servidor externo.
