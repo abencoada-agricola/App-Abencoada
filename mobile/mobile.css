@@ -39,6 +39,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .pending button{width:100%;margin-top:10px}
 .worker{font-size:clamp(16px,4.5vw,19px);margin-bottom:14px}
 .context-box{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 20px;border:1px solid var(--border);border-radius:16px;background:var(--panel);padding:14px;margin:0 0 18px;font-size:clamp(17px,4.8vw,20px)}
+.context-box span{max-width:100%;overflow-wrap:anywhere}
 .menu-screen{display:flex;flex-direction:column}
 .menu-actions{flex:1 0 auto;min-height:200px;display:flex;flex-direction:column;justify-content:center;gap:clamp(26px,4.5dvh,40px);padding:20px 0}
 .menu-actions button.primary{display:grid;grid-template-columns:32px minmax(0,1fr) 32px;align-items:center;gap:8px;margin:0;min-height:clamp(72px,12vh,88px);padding:18px 12px;border-radius:26px;font-size:clamp(21.6px,6.24vw,31.2px);line-height:1.2}

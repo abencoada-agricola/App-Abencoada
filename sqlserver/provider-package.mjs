@@ -1,0 +1,13 @@
+import {cp,mkdir,writeFile,readFile} from 'node:fs/promises';
+import {resolve,join} from 'node:path';
+const destination=resolve(process.argv[2]||'work/provider-api');await mkdir(join(destination,'sqlserver'),{recursive:true});
+const files=['server.mjs','database.mjs','bridge.ps1','connection-settings.mjs','auth.mjs','domain.mjs','manifest.json','migrate-work-front.mjs'];
+for(const file of files)await cp('sqlserver/'+file,join(destination,'sqlserver',file));
+await cp('sqlserver/migrations',join(destination,'sqlserver','migrations'),{recursive:true});
+for(const file of ['configure.ps1','start.ps1','README.md'])await cp('sqlserver/provider/'+file,join(destination,file));
+const lock=JSON.parse(await readFile('package-lock.json','utf8'));
+const bcrypt=lock.packages['node_modules/bcryptjs'];
+const pkg={name:'abencoada-sql-api',version:'2.0.54',private:true,type:'module',engines:{node:'>=22'},scripts:{start:'node sqlserver/server.mjs'},dependencies:{bcryptjs:'3.0.3'}};
+await writeFile(join(destination,'package.json'),JSON.stringify(pkg,null,2)+'\n');
+await writeFile(join(destination,'package-lock.json'),JSON.stringify({name:pkg.name,version:pkg.version,lockfileVersion:3,requires:true,packages:{'':{name:pkg.name,version:pkg.version,dependencies:pkg.dependencies,engines:pkg.engines},'node_modules/bcryptjs':bcrypt}},null,2)+'\n');
+console.log('Provider package prepared without credentials or database exports: '+destination);

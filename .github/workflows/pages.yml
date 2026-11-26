@@ -26,9 +26,10 @@ jobs:
       - run: npm test
       - run: npm run build
         env:
-          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
-          SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
-          SUPABASE_LOGIN_KEY: ${{ vars.SUPABASE_LOGIN_KEY }}
+          APP_BACKEND: ${{ vars.APP_BACKEND || 'api-v1' }}
+          REQUIRE_HTTPS: 'true'
+          SQL_API_URL: ${{ vars.SQL_API_URL }}
+          API_V1_URL: ${{ vars.API_V1_URL || 'https://gmaiserp-api.gmais-sistemas.com.br' }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

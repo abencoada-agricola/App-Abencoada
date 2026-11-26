@@ -11,6 +11,11 @@ on:
       - 'scripts/app-version.mjs'
       - 'app-version.json'
       - 'web/backend.js'
+      - 'web/sqlserver-backend.js'
+      - 'web/sqlserver-client.js'
+      - 'scripts/sql-release-config.mjs'
+      - 'scripts/api-v1-config.mjs'
+      - 'web/api-v1-*.js'
       - 'web/gmais-fleet.js'
       - 'web/fuel-utils.js'
       - 'web/text-case.js'
@@ -44,9 +49,10 @@ jobs:
         run: node scripts/app-version.mjs "$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
       - run: npm run build:mobile
         env:
-          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
-          SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
-          SUPABASE_LOGIN_KEY: ${{ vars.SUPABASE_LOGIN_KEY }}
+          APP_BACKEND: ${{ vars.APP_BACKEND || 'api-v1' }}
+          REQUIRE_HTTPS: 'true'
+          SQL_API_URL: ${{ vars.SQL_API_URL }}
+          API_V1_URL: ${{ vars.API_V1_URL || 'https://gmaiserp-api.gmais-sistemas.com.br' }}
       - run: npx cap sync android
       - name: Prepare signing key
         env:

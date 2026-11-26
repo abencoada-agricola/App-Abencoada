@@ -36,7 +36,7 @@ const syncSource=appSource.slice(appSource.indexOf('async function sync(){'),app
 let failRefresh=true,failUpload=false,mismatch=false;
 const stored=[],deliveries=[];
 const fresh={user:{id:'worker'},fleets:[],locations:[],rules:{checklistEnabled:true}};
-const state={reportDelivery(user,ids){if(ids.length)deliveries.push({user,ids:[...ids]})},requestDeliveryNotifications:async()=>({enabled:false}),loginLoading:(button,loading)=>{button.disabled=loading},locked:false,localAccess:{refresh:async()=>{},requireOnline:async()=>{}},busy:false,session:structuredClone(fresh),needsLogin:false,nativeConfigured:false,connected:true,syncIssue:null,message:'',queue:[],selected:null,screen:'menu',
+const state={useV1:false,reportDelivery(user,ids){if(ids.length)deliveries.push({user,ids:[...ids]})},requestDeliveryNotifications:async()=>({enabled:false}),loginLoading:(button,loading)=>{button.disabled=loading},locked:false,localAccess:{refresh:async()=>{},requireOnline:async()=>{}},busy:false,session:structuredClone(fresh),needsLogin:false,nativeConfigured:false,connected:true,syncIssue:null,message:'',queue:[],selected:null,screen:'menu',
  describeSyncFailure,prepareBackgroundSync,accessSignature:()=>'',checklistEnabled:()=>true,operationDependencies:()=>[],
  mirrorQueue:async()=>{},configureNative:async()=>{},updatePanels:()=>{},render:()=>{},login:()=>{},
  put:async(key,value)=>stored.push({key,value:structuredClone(value)}),op:async(_store,_mode,fn)=>fn({put:record=>stored.push(structuredClone(record)),delete:id=>stored.push({deleted:id})}),

@@ -1,4 +1,29 @@
+## 2026-11-26 — URL pública da API para teste
+
+Site e Android usam por padrão o cliente api-v1 com https://gmaiserp-api.gmais-sistemas.com.br. Variáveis explícitas continuam selecionando o backend para builds existentes. Os workflows têm o mesmo padrão, com possibilidade de substituição pelas variáveis do repositório.
+
+A API publicada respondeu ao OpenAPI, mas o login de teste recebeu 401. Os preflights de https://abencoada-agricola.github.io, https://localhost e http://127.0.0.1:4173 receberam 403. A homologação autenticada depende de conta da API e de liberação CORS no provedor. O contrato publicado não lista /health/live, /health/ready nem work_front no abastecimento. A validação local com servidor sintético não comprova integração real.
 # Development workflow
+
+## Migração de Frente de Trabalho — 26/11/2026
+
+Antes de disponibilizar a API SQL com este campo, aplique `node sqlserver/migrate-work-front.mjs` usando a conexão protegida configurada. A migração em `sqlserver/migrations/20261126-work-front.sql` é aditiva e idempotente; `install.mjs` também a executa. Valide com `node sqlserver/test.mjs` (transação revertida). Sem login válido, mantenha a aplicação remota pendente; não publique o novo manifesto/API contra uma base sem a coluna.
+
+`node tests/work-front.mjs` verifica o domínio SQL sem credenciais e a cadeia PostgreSQL em memória. `node tests/api-v1-browser.mjs` verifica a captura offline, fechamento/reabertura e detalhes do painel com servidor sintético. A extensão `data.work_front` está em `docs/api-v1/work-front-extension.json` e depende de suporte no servidor externo; o contrato original foi preservado.
+
+## API v1 do Luiz — 24/11/2026
+
+Consulte [o guia de integração](api-v1/README.md). O modo `APP_BACKEND=api-v1` exige `API_V1_URL` e usa o cliente REST; o padrão dos workflows é `api-v1` com a URL pública recebida em 26/11/2026. As variáveis do GitHub selecionam o modo sem incorporar credenciais ao site/APK. A URL real e o código do Luiz ainda estão pendentes, portanto este modo está preparado e testado localmente, sem ativação em produção.
+
+`node tests/api-v1.mjs` integra a suíte padrão. `node tests/api-v1-browser.mjs` executa testes de UI com um servidor sintético e Chrome isolado; requer Playwright e gera builds locais de teste. Para testes Android instrumentados, use JDK 21 e `-PtestBuildType=sqlEmulator`, conforme o guia. Não instalar builds de teste como atualização operacional nem apagar filas para permitir a troca de backend.
+
+## Trabalho em dois computadores
+
+O repositório central é https://github.com/abencoada-agricola/abencoada. Em outra máquina, clone e selecione a branch de trabalho. Antes de trocar de computador, faça `git add`, `git commit` e `git push`; no destino, use `git pull --ff-only` antes de editar. Use uma branch por tarefa e pull request para integrar à main. O Git não sincroniza bancos, dependências ou credenciais. Configure ferramentas e `.env` em cada máquina. Não versione exportações de dados.
+
+## Decisão de implantação — 06/11/2026
+
+O responsável pelo GMAIS criará um banco próprio do aplicativo ao lado do banco existente do GMAIS. Esse destino SQL Server substitui o Supabase sem misturar tabelas com o GMAIS. Os registros atuais são testes e não devem ser migrados: instalar somente a estrutura, com equivalência de tabelas, colunas, relações, índices e regras. Tipos, autenticação e funções exigem adaptação entre PostgreSQL e SQL Server. Não apagar a base local atual nem executar importação nesta preparação. A consulta ao GMAIS depende de interface autorizada pelo responsável. O APK publicado continua no Supabase até configurar e validar a nova API.
 
 Graphify maps the maintained JavaScript, Java and SQL source. Git records each code change; `docs/changes.md` records the reason and validation of material behavior changes.
 
@@ -66,3 +91,17 @@ The baseline parser reports partial/no-symbol extraction for some Android Gradle
 The health report also identifies self-loops and same-endpoint relationships that can be collapsed during traversal/clustering. Check the source and relevant tests when an exact relationship matters. These limitations do not indicate an application test failure.
 
 Do not index credentials, operational exports or GMAIS captures. Keep all future GMAIS investigation read-only unless the user explicitly changes that requirement.
+
+## Backend local SQL Server
+
+Consulte sqlserver/README.md. Compile com SQL_API_URL para selecionar a API local; sem essa variável, o Supabase continua sendo o padrão. O banco local é app_abencoada. Execute node sqlserver/test.mjs para integração real, powershell -File sqlserver/build-local.ps1 para builds e node sqlserver/server.mjs para iniciar em 127.0.0.1:4780. Não publique sqlserver/local-credentials.txt nem backups. Migração dos dados atuais depende de backup, simulação e revisão das contagens e precisão.
+
+A cópia atual do Supabase foi importada em 05/11/2026: 15 tabelas, 76 linhas e três identidades. Consulte sqlserver/exports/migration-result.json para o resultado da fotografia importada. Execute node sqlserver/verify-migration.mjs para conferir cada valor contra a exportação e node sqlserver/parity-test.mjs para comparar os cenários com as funções PL/pgSQL exportadas. Esses arquivos de exportação são reservados e não devem ser commitados. Reexecute testes após mudanças; a cópia não se sincroniza automaticamente com o Supabase.
+
+## Perfil SQL remoto (06/11/2026)
+
+A configuração ativa usa 177.234.159.74 / APP_ABENCOADA. Consulte sqlserver/connection-settings.mjs e sqlserver/README.md. A credencial SQL é um PSCredential protegido por DPAPI, em arquivo ignorado pelo Git. Nenhuma senha deve ser embutida no front-end. Para manutenção da instância original use SQL_PROFILE=local explicitamente; por padrão, os testes SQL usam o perfil ativo. O instalador remoto fica restrito ao banco configurado e não consulta master. Execute node sqlserver/connection-settings.test.mjs ao modificar os perfis.
+
+## Publicação exclusiva SQL Server
+
+No modo sqlserver, os workflows exigem vars.SQL_API_URL; no modo api-v1, exigem vars.API_V1_URL. Ambos validam HTTPS. Sem a API hospedada, a publicação para com mensagem clara e não usa Supabase como fallback. Builds SQL usam web/sqlserver-backend.js, sem o SDK Supabase. Para desenvolvimento local, use SQL_API_URL=http://127.0.0.1:4780. O pacote de API para o provedor é gerado por sqlserver/provider-package.mjs e exclui credenciais/exportações. Consulte sqlserver/provider/README.md. Não publicar endereço local/emulador como produção.

@@ -8,6 +8,7 @@ if (releaseCode.find(/[13]/) || releaseName.find(/[13]/)) {
 }
 
 android {
+    testBuildType = (project.findProperty('testBuildType') ?: 'debug').toString()
     namespace = "br.com.abencoada.diesel"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
@@ -35,6 +36,11 @@ android {
         }
     }
     buildTypes {
+        sqlEmulator {
+            initWith debug
+            applicationIdSuffix '.sqlserver'
+            matchingFallbacks = ['debug']
+        }
         release {
             signingConfig signingConfigs.release
             minifyEnabled false

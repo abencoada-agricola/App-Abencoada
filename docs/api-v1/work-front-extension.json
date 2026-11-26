@@ -1,0 +1,7 @@
+{
+  "description": "Extensão solicitada em 26/11/2026. Não faz parte do contrato original fornecido pelo Luiz; exige implementação e homologação no servidor externo.",
+  "schema": "RefuelCommand",
+  "optional_properties": {
+    "work_front": {"type": "string", "maxLength": 120}
+  }
+}

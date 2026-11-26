@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {connectionSettings,settings} from './connection-settings.mjs';
+import {Database} from './database.mjs';
+assert.equal(settings.server,'177.234.159.74');assert.equal(settings.database,'APP_ABENCOADA');assert.equal(settings.local,false);assert(settings.credentialPath);
+assert.throws(()=>connectionSettings({SQL_PROFILE:'local'}),/desativado/);
+assert.throws(()=>connectionSettings({SQL_SERVER:'localhost'}),/restrito/);
+assert.throws(()=>connectionSettings({SQL_DATABASE:'other_database'}),/restrito/);
+assert.throws(()=>new Database('outside_configured_application'),/restricted/);
+assert.equal(connectionSettings({SQL_TRUST_SERVER_CERTIFICATE:'false'}).trustServerCertificate,false);
+console.log('Only the approved remote application database is allowed; local and alternate targets are blocked.');

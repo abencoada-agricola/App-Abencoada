@@ -8,7 +8,8 @@ import java.io.*;
 import java.util.*;
 public class OfflineSyncWorker extends Worker {
  public OfflineSyncWorker(@NonNull Context context,@NonNull WorkerParameters params){super(context,params);}
- @NonNull @Override public Result doWork(){synchronized(OfflineStore.LOCK){try{
+ @NonNull @Override public Result doWork(){try{boolean v1;synchronized(OfflineStore.LOCK){v1="api-v1".equals(OfflineStore.read(getApplicationContext()).optString("backendId"));}if(v1)return new ApiV1Sync(getApplicationContext()).run();}catch(Exception e){return Result.retry();}return legacyWork();}
+ private Result legacyWork(){synchronized(OfflineStore.LOCK){try{
   JSONObject state=OfflineStore.read(getApplicationContext());JSONArray queue=state.optJSONArray("queue");if(queue==null||queue.length()==0)return Result.success();
   if(!state.optString("url").equals("https://pqsbcwmtemlwvcpkcyum.supabase.co")||state.optString("token").isEmpty())return Result.failure();
   JSONArray remaining=new JSONArray(),acks=state.optJSONArray("acks"),errors=new JSONArray();if(acks==null)acks=new JSONArray();Set<String> blocked=new HashSet<>();boolean retry=false;List<String> delivered=new ArrayList<>();

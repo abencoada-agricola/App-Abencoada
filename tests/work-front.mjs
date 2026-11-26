@@ -1,0 +1,40 @@
+import {PGlite} from '@electric-sql/pglite';
+import {readFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import {dispatch} from '../sqlserver/domain.mjs';
+// Exercise the SQL API domain without requiring production credentials.
+const tables={members:[{email:'worker@example.test',name:'OPERADOR',role:'operator',permissions:{refuel:true}}],fleets:[{id:'1001',active:true,meter_fields:{km:true,engine:false,elevator:false}}],settings:[],records:[],diesel_locations:[],diesel_operations:[],diesel_checklists:[]};
+const store={rows:name=>tables[name],add(name,data){const row={received_at:new Date().toISOString(),...data};tables[name].push(row);return row}};
+const user={id:crypto.randomUUID(),email:'worker@example.test'};
+const command={id:crypto.randomUUID(),kind:'refuel',mode:'manual',fleet:'1001',localCode:'1',materialCode:'9',date:'2026-01-01',createdAt:new Date().toISOString(),liters:20,km:100,measuredFields:{km:true,engine:false,elevator:false},workFront:' FRENTE NORTE '};
+assert.equal(dispatch(store,user,'operation-submit',command).id,command.id);assert.equal(tables.records[0].work_front,'FRENTE NORTE');
+assert.equal(dispatch(store,user,'operation-submit',{...command,workFront:'OUTRA'}).duplicate,true);assert.equal(tables.records[0].work_front,'FRENTE NORTE');
+for(const workFront of [123,{},'x'.repeat(121)])assert.throws(()=>dispatch(store,user,'operation-submit',{...command,id:crypto.randomUUID(),workFront}),e=>e.status===422);
+const legacy={...command,id:crypto.randomUUID()};delete legacy.workFront;dispatch(store,user,'operation-submit',legacy);assert.equal(tables.records.at(-1).work_front,null);
+const manifest=JSON.parse(await readFile('sqlserver/manifest.json','utf8'));assert.equal(manifest.find(t=>t.name==='public.records').columns.find(c=>c.name==='work_front').nullable,true);
+const db=new PGlite();
+await db.exec(`create role service_role;create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql as $$select (nullif(current_setting('request.jwt.claims',true),'')::jsonb->>'sub')::uuid$$;create function auth.jwt() returns jsonb language sql as $$select nullif(current_setting('request.jwt.claims',true),'')::jsonb$$;grant usage on schema auth to authenticated,anon;grant execute on all functions in schema auth to authenticated,anon;`);
+for(const f of ['schema','usernames','field-access','mobile','operations','background-sync','gmais-readings','fuel-control','transfer-baseline','occurrence-photos','test-data','simulated-readings','vehicle-meters','trial-recorder-readings','android-only','record-controls','tank-references','checklists','user-access','member-removal','operation-fleets','general-occurrences'])await db.exec(await readFile('supabase/'+f+'.sql','utf8'));
+const worker=crypto.randomUUID(),other=crypto.randomUUID();
+await db.query('insert into auth.users values($1),($2)',[worker,other]);
+await db.exec(`insert into members(email,name,role,username) values('worker@example.test','OPERADOR','operator','operador'),('other@example.test','OUTRO','operator','outro');insert into fleets(id,name,type) values('1001','FROTA TESTE','Outro');`);
+async function who(id,email){await db.exec('reset role');await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:id,email,role:'authenticated'})]);await db.exec('set role authenticated')}
+async function rpc(p){return(await db.query('select diesel_operation_submit($1::jsonb) result',[JSON.stringify(p)])).rows[0].result}
+const record={id:crypto.randomUUID(),kind:'refuel',mode:'manual',fleet:'1001',localCode:'1',materialCode:'9',date:'2026-01-01',createdAt:new Date().toISOString(),liters:20,km:100,measuredFields:{km:true,engine:false,elevator:false}};
+await who(worker,'worker@example.test');assert.equal((await rpc(record)).id,record.id);
+await db.exec('reset role');const old=(await db.query('select to_jsonb(r) value from records r where id=$1',[record.id])).rows[0].value;
+await db.exec(await readFile('supabase/work-front.sql','utf8'));
+const after=(await db.query('select to_jsonb(r) value from records r where id=$1',[record.id])).rows[0].value;assert.deepEqual(after,{...old,work_front:null});
+await who(worker,'worker@example.test');
+const fresh={...record,id:crypto.randomUUID(),workFront:'  FRENTE NORTE  '};assert.equal((await rpc(fresh)).id,fresh.id);
+assert.equal((await rpc({...fresh,workFront:'OUTRA FRENTE'})).duplicate,true);
+for(const workFront of [123,{},'x'.repeat(121)])assert.equal((await rpc({...record,id:crypto.randomUUID(),workFront})).status,422);
+for(const workFront of [undefined,null,''])assert.ok((await rpc({...record,id:crypto.randomUUID(),workFront})).id);
+await assert.rejects(()=>db.query('select private.operation_submit_before_work_front($1::jsonb)',[JSON.stringify(record)]),/permission denied/);
+await who(other,'other@example.test');assert.equal((await rpc(fresh)).status,409);
+await who(worker,'worker@example.test');const lease=(await db.query('select diesel_device_register($1) result',[crypto.randomUUID()])).rows[0].result;
+await db.exec('reset role;set role anon');const queued={...record,id:crypto.randomUUID(),workFront:'FRENTE SUL'};
+const background=()=>db.query('select diesel_device_submit($1,$2::jsonb) result',[lease.token,JSON.stringify(queued)]).then(r=>r.rows[0].result);
+assert.equal((await background()).id,queued.id);assert.equal((await background()).duplicate,true);
+await db.exec('reset role');assert.equal((await db.query('select work_front from records where id=$1',[fresh.id])).rows[0].work_front,'FRENTE NORTE');assert.equal((await db.query('select work_front from records where id=$1',[queued.id])).rows[0].work_front,'FRENTE SUL');
+await db.close();console.log('Work front: additive migration, legacy records, optional values, validation, ownership, stable retries and background delivery passed.');

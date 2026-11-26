@@ -14,7 +14,7 @@ const nodes=new Map();
 const element=()=>({hidden:false,disabled:false,innerHTML:'',classList:{contains(){return false},toggle(){},add(){},remove(){}},focus(){this.focused=true}});
 for(const id of ['#login-logo','#header-logo','#header-details','#header-user','#open-settings','#open-observation','#form-error','#occurrence-form [name="notes"]'])nodes.set(id,element());
 const captured=[],saved=[];
-const state={configureSystemBars(){},reportDelivery(){},requestDeliveryNotifications:async()=>({enabled:false}),loginLoading:(button,loading)=>{button.disabled=loading},locked:false,localAccess:{refresh:async()=>{},requireOnline:async()=>{}},screen:'menu',context:{},fixedContext:null,contextNext:'methods',mode:'manual',draft:{},editId:null,occurrenceReturn:null,photoBusy:false,queue:[],selected:null,message:'',syncIssue:null,connected:true,busy:false,needsLogin:false,nativeConfigured:false,
+const state={useV1:false,configureSystemBars(){},reportDelivery(){},requestDeliveryNotifications:async()=>({enabled:false}),loginLoading:(button,loading)=>{button.disabled=loading},locked:false,localAccess:{refresh:async()=>{},requireOnline:async()=>{}},screen:'menu',context:{},fixedContext:null,contextNext:'methods',mode:'manual',draft:{},editId:null,occurrenceReturn:null,photoBusy:false,queue:[],selected:null,message:'',syncIssue:null,connected:true,busy:false,needsLogin:false,nativeConfigured:false,
  session:{user:{id:'operator',name:'OPERADOR',permissions:all},fleets:[],locations:[],materials:[],rules:{checklistEnabled:true}},
  app:{...element(),scrollTop:0},logout:element(),connectionStatus:element(),
  document:{body:element(),querySelector:selector=>nodes.get(selector)||null,querySelectorAll:()=>[]},
@@ -72,7 +72,7 @@ state.api=async()=>{throw Object.assign(Error('Access revoked'),{status:403})};a
 console.log('Airplane mode skips auth refresh; missing local tokens preserve offline access; known server revocation requires online validation.');
 
 // Login/menu, checklist and occurrences do not require a context. Fuel workflows do.
-const contextButton={disabled:false},contextError={textContent:''};const contextForm={values:{localCode:'2',materialCode:'8'},querySelector:s=>s==='button'?contextButton:contextError};
+const contextButton={disabled:false},contextError={textContent:''};const contextForm={values:{localCode:'2',materialCode:'8',workFront:'  FRENTE NORTE  '},querySelector:s=>s==='button'?contextButton:contextError};
 const refuelEntry={...element(),dataset:{workflow:'methods'}},transferEntry={...element(),dataset:{workflow:'transfer'}};
 state.document.querySelectorAll=selector=>selector==='[data-workflow]'?[refuelEntry,transferEntry]:[];
 state.document.querySelector=selector=>selector==='#context-form'?(state.app.innerHTML.includes('id="context-form"')?contextForm:null):nodes.get(selector)||null;
@@ -81,9 +81,9 @@ state.queue=[{id:'keep-original',localCode:'1',materialCode:'9',userId:'operator
 state.renderFlow();assert.equal(state.screen,'menu');assert.doesNotMatch(state.app.innerHTML,/id="context-form"/);
 state.screen='checklist-fleet';state.renderFlow();assert.equal(state.screen,'checklist-fleet');assert.doesNotMatch(state.app.innerHTML,/id="context-form"/);
 nodes.get('#open-observation').onclick();assert.equal(state.screen,'occurrence');assert.doesNotMatch(state.app.innerHTML,/id="context-form"/);state.occurrenceReturn=null;
-state.screen='menu';state.renderFlow();refuelEntry.onclick();assert.equal(state.screen,'context');assert.equal(state.contextNext,'methods');assert.match(state.app.innerHTML,/id="context-form"/);assert.match(state.app.innerHTML,/data-screen="menu"/);
+state.screen='menu';state.renderFlow();refuelEntry.onclick();assert.equal(state.screen,'context');assert.equal(state.contextNext,'methods');assert.match(state.app.innerHTML,/id="context-form"/);assert.match(state.app.innerHTML,/LOCAL DO MATERIAL/);assert.match(state.app.innerHTML,/name="workFront"/);assert.match(state.app.innerHTML,/data-screen="menu"/);
 state.writeMeta=async()=>{throw Error('Storage failure')};await contextForm.onsubmit({preventDefault(){}});assert.match(contextError.textContent,/Storage failure/);assert.equal(state.screen,'context');assert.equal(state.fixedContext,null);assert.equal(contextButton.disabled,false);
-state.writeMeta=async batch=>{for(const[key,value]of Object.entries(batch))saved.push({key,value:structuredClone(value)})};await contextForm.onsubmit({preventDefault(){}});assert.equal(state.screen,'methods');assert.equal(state.fixedContext.localCode,'2');assert.equal(state.fixedContext.materialCode,'8');assert.equal(state.draft.km,'500');assert.equal(state.draft.context,undefined);assert.deepEqual(state.queue,pendingBefore);
+state.writeMeta=async batch=>{for(const[key,value]of Object.entries(batch))saved.push({key,value:structuredClone(value)})};await contextForm.onsubmit({preventDefault(){}});assert.equal(state.screen,'methods');assert.equal(state.fixedContext.localCode,'2');assert.equal(state.fixedContext.materialCode,'8');assert.equal(state.fixedContext.workFront,'FRENTE NORTE');assert.equal(state.draft.km,'500');assert.equal(state.draft.context,undefined);assert.deepEqual(state.queue,pendingBefore);
 state.screen='menu';state.renderFlow();transferEntry.onclick();assert.equal(state.screen,'transfer');
 state.fixedContext=null;state.context={};state.screen='menu';state.renderFlow();transferEntry.onclick();assert.equal(state.screen,'context');assert.equal(state.contextNext,'transfer');contextForm.values={localCode:'3',materialCode:'7'};await contextForm.onsubmit({preventDefault(){}});assert.equal(state.screen,'transfer');assert.deepEqual(state.queue,pendingBefore);
 assert.equal(nodes.get('#header-user').textContent,state.session.user.name);assert.ok(!state.app.innerHTML.includes('home-brand'));

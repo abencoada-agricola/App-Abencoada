@@ -1,4 +1,86 @@
+## 2026-11-26 — Publicação para teste da API
+
+Suíte completa aprovada no checkout preparado sobre origin/main. Builds web e mobile concluídos. O preflight do GitHub Pages respondeu 204 com Access-Control-Allow-Origin correspondente. A origem Android https://localhost continua com 403. O teste autenticado de leitura anterior confirmou login e bootstrap. Publicação não homologa gravações reais nem o campo frente de trabalho no servidor externo.
+
+## 2026-11-26 — URL pública da API para teste
+
+Site e Android usam por padrão o cliente api-v1 com https://gmaiserp-api.gmais-sistemas.com.br. Variáveis explícitas continuam selecionando o backend para builds existentes. Os workflows têm o mesmo padrão, com possibilidade de substituição pelas variáveis do repositório.
+
+A API publicada respondeu ao OpenAPI, mas o login de teste recebeu 401. Os preflights de https://abencoada-agricola.github.io, https://localhost e http://127.0.0.1:4173 receberam 403. A homologação autenticada depende de conta da API e de liberação CORS no provedor. O contrato publicado não lista /health/live, /health/ready nem work_front no abastecimento. A validação local com servidor sintético não comprova integração real.
 # Change log
+
+## 2026-11-26 — Frente de Trabalho no abastecimento
+
+O contexto de abastecimento agora oferece `Frente de Trabalho`, texto livre opcional com até 120 caracteres, e usa o rótulo `Local do Material`. A frente fica salva por conta no aparelho, é copiada para cada abastecimento e pode ser alterada pelo botão `ALTERAR LOCAL / FRENTE`. A seleção existente recebe o novo campo no próximo abastecimento. Transferências e ocorrências não exigem frente. Correções mantêm a frente original do registro pendente; filas e comandos já congelados não são reescritos.
+
+Adicionada a coluna opcional `app.records.work_front` ao esquema/manifesto SQL Server e uma migração aditiva idempotente (`node sqlserver/migrate-work-front.mjs`), também chamada pelo instalador. A API aceita APKs antigos sem o campo, valida textos novos e preserva o primeiro valor aceito nos reenvios. Detalhes, CSV e impressão do painel incluem a frente. A migração histórica adicional `supabase/work-front.sql` permite testar a mesma regra na cadeia PostgreSQL, sem modificar migrações anteriores nem acessar o Supabase em produção.
+
+No cliente opcional API v1, a frente preenchida é enviada como `data.work_front`, inclusive no comando offline congelado. Isso é uma extensão nova: `docs/api-v1/work-front-extension.json` registra o acréscimo sem alterar a cópia original do contrato do Luiz. O servidor externo precisa implementar/homologar esse campo; seu código não está neste projeto.
+
+Validação: 33 suítes Node aprovadas, incluindo migração PostgreSQL com preservação dos dados anteriores, campos ausentes/vazios, validação, permissões, reenvio idempotente e entrega por dispositivo. Teste em Chrome isolado aprovado para captura sem rede, fechamento/reabertura da página, leitura da fila persistida, envio da frente e exibição nos detalhes do painel, usando HTTP sintético. Builds web/móvel aprovados. Graphify atualizado em modo determinístico (sem chamadas de modelos). Após atualização da credencial protegida fornecida pelo usuário, a migração foi aplicada no APP_ABENCOADA remoto. Coluna opcional confirmada, reexecução idempotente aprovada e os 20 abastecimentos anteriores conferidos por campo sem alterações. Gravação/leitura de frente com acentos e valor nulo aprovadas em transação revertida, sem deixar dados de teste. A suíte geral SQL encontrou divergência anterior ao novo campo: `private.valid_feature_access` no banco exige quatro permissões, incluindo `occurrence`, enquanto o fixture de teste envia três; a transação foi revertida. Essa regra do banco não foi alterada nesta tarefa. Nenhum dado GMAIS foi acessado/alterado; sem publicação ou novo APK nesta etapa.
+
+## 2026-11-24 — Cliente preparado para a API v1 do Luiz
+
+Adicionado modo opcional `api-v1` com contrato extraído do HTML fornecido pelo usuário (`docs/api-v1/openapi-luiz.json`). Login Bearer, senha temporária, bootstrap por conta/origem, quatro operações, comando congelado antes da rede, recibo com ID remoto separado e reconciliação após tentativa incerta. A mudança preserva filas/rascunhos e bloqueia a troca quando existem pendências/acks do backend anterior ou de outra conta.
+
+O Worker v1 usa a fila cifrada existente, libera o lock durante HTTP e faz merge no estado atual. Recibos nativos ficam duráveis antes da confirmação JS; a fila JS só é removida junto com a persistência do recibo em uma transação. Painel adaptado para rotas REST, paginação/detalhes, fotos, cadastros, permissões, senha temporária e checklists. Leituras ausentes e recursos não definidos pelo contrato não são inventados. `docs/api-v1/README.md` registra as diferenças e a sequência de ativação.
+
+Builds selecionam `APP_BACKEND=api-v1` com `API_V1_URL`; workflows mantêm SQL como padrão até configurar explicitamente a opção nova. Nenhuma publicação, migração SQL ou alteração no GMAIS foi executada. O código/commit do Luiz e a URL real ainda não foram recebidos; os testes locais não homologam o servidor dele.
+
+Validação: 32 suítes Node aprovadas, teste de contrato/HTTP sintético com perda de resposta pós-commit e Retry-After, navegador Chrome isolado cobrindo quatro operações/troca de senha/histórico, build Android aprovado e três testes instrumentados no emulador Android 17. Os testes nativos usam preferências exclusivas de teste e verificam recibos, comparação estrutural, preservação de estado cifrado e captura concorrente durante HTTP. Graphify atualizado em modo determinístico, sem serviços de modelos. Restam validação com a API real, CORS/HTTPS, aparelho físico e atualização assinada antes da distribuição.
+
+## 2026-11-06 — Banco único e retirada posterior das bases antigas
+
+Usuário definiu APP_ABENCOADA em 177.234.159.74 como único destino do aplicativo novo e pediu explicação histórica no GitHub. Publicado somente docs/historico-supabase.md na branch docs/historico-supabase-2026-11-06, commit 2f37ad4, sem alterar main ou disparar publicação do aplicativo. Configuração nova bloqueia SQL_PROFILE=local e qualquer outro servidor/banco; não há fallback para localhost. Builds exigem SQL_API_URL e recusam outro backend.
+
+Backup local de teste criado e verificado com CHECKSUM em app_abencoada_teste_antes_exclusao_20261106_090103.bak na pasta Backup da instância local. Revisão automática rejeitou encerrar a API antiga do emulador e excluir o banco local; essas ações não foram executadas. Depois de informado sobre a interrupção do site/APK antigos, o usuário escolheu explicitamente aguardar a API HTTPS antes de excluir. Não excluir o Supabase nem o banco local nesta etapa. Uma instância antiga da API do emulador ainda pode precisar ser reiniciada na troca final; não confundir a configuração nova com processos antigos já carregados.
+
+Pendência: provedor hospedar API HTTPS; validar site/novo APK; reconciliar os lançamentos surgidos após a fotografia importada; confirmar a troca e então executar o desligamento/exclusão com backup atualizado. Preservar filas e rascunhos offline. Acesso da API principal e igualdade da fotografia no destino remoto foram conferidos.
+
+
+## 2026-11-06 — Preparação da saída do Supabase no site/APK
+
+Usuário decidiu deixar Supabase e informou que o provedor do servidor pode hospedar a API, mas ainda não tem domínio HTTPS nem acesso de publicação. Preparado pacote de API Windows/Node/PowerShell sem credenciais, dados ou backups e mensagem para encaminhar ao provedor. O pacote inclui instalação de dependência fixada, configuração DPAPI e serviço/proxy/origens documentados.
+
+Builds com SQL_API_URL agora usam uma entrada exclusiva SQL Server; artefatos web/móvel não incluem SDK ou endpoints do Supabase. Workflows de site e APK exigem APP_BACKEND=sqlserver e uma API HTTPS real em vars.SQL_API_URL; não há fallback silencioso ao Supabase nas próximas publicações. Mantido o código/migrações históricos para testes e manutenção. Nenhuma publicação foi realizada com localhost ou domínio inventado.
+
+Validação: regras de release e HTTPS, inspeção dos artefatos sem SDK/endpoints Supabase, builds web/móvel locais e painel SQL em navegador isolado aprovados. A API local segue usando o banco remoto. Publicação externa e APK definitivo dependem da URL e instalação pelo provedor; o sistema público instalado não deve ser desligado antes da troca validada.
+
+
+## 2026-11-06 — Destino remoto APP_ABENCOADA
+
+Destino confirmado pelo usuário: 177.234.159.74, banco APP_ABENCOADA, login SQL informado na sessão. O endereço inicialmente digitado com final .97 não foi adotado. Após autorização explícita, a conexão usa TLS criptografado com confiança no certificado do servidor. Credencial armazenada por DPAPI em sqlserver/credentials.local.xml e configuração em connection.local.json, ambos ignorados pelo Git; nenhuma senha fica no código, argumentos de processo, site ou APK.
+
+Criada a estrutura no banco remoto que estava vazio, com compatibilidade SQL Server 2019 (remoção do argumento OBJECT em ISJSON e substituição de IS DISTINCT FROM). Colunas de texto usam collation binária para preservar comparações da origem. Instalador remoto não acessa master nem cria bancos; a camada de conexão recusa nomes de bancos diferentes do destino configurado. Nenhum outro banco do servidor foi consultado ou alterado pela migração.
+
+Copiada a base local já validada: 15 tabelas de domínio, 125 colunas, 76 linhas e três identidades/hashes de senha. Aplicadas as 31 traduções de CHECK e cinco regras de gatilhos. Comparação de todos os valores após gravar aprovada. API local reiniciada apontando para o destino remoto. A base local anterior foi preservada; SQL_PROFILE=local permite acesso explícito a ela para manutenção.
+
+Validação no SQL Server 2019 remoto: simulação com rollback, importação confirmada, conferência por coluna/valor, 28 verificações de integração, 33 comparações com as funções exportadas do PostgreSQL, testes HTTP de autenticação/origem/catálogo e painel em Chrome isolado. Testes de configuração verificam TLS por padrão, isolamento de perfis e bloqueio de outros bancos. Nenhum registro de teste permaneceu. O site público e APK já distribuído ainda não foram republicados; a API continua restrita a 127.0.0.1 nesta máquina.
+
+
+## 2026-11-06 — Banco novo sem dados de teste e Android SQL local
+
+Resultado final da validação: suíte completa de testes do app aprovada; build `assembleSqlEmulator` aprovado com JDK 21; instalação e abertura do pacote separado confirmadas. A WebView Android recebeu HTTP 200 de `http://10.0.2.2:4782/health`, identificando `sqlserver` e `app_abencoada`, com origem `http://localhost`. Não foi efetuado login nem criado registro operacional no teste manual.
+
+O destino planejado é um banco próprio do app no SQL Server, ao lado do GMAIS, com somente estrutura e regras equivalentes ao Supabase. Não migrar registros de teste. A cópia local histórica é preservada. Documentado fluxo Git entre computadores.
+
+Adicionada variante Android sqlEmulator, pacote separado .sqlserver e API loopback na porta 4782, acessível pelo emulador em 10.0.2.2. A variante permite HTTP somente para o host do emulador/localhost e usa origem http://localhost. A versão oficial mantém sua configuração. Limite atual: worker nativo de segundo plano permanece restrito ao Supabase; SQL deve sincronizar em primeiro plano nesta etapa. Validação: saúde SQL local e 28 verificações de integração aprovadas, além dos testes HTTP de autenticação, sessão, registros e origens. Build Android e suíte do app conferidos nesta preparação; resultado final registrado abaixo.
+
+## 2026-11-05 — Importação da cópia atual do Supabase
+
+Após escolha explícita por manter SQL Server com dados e comportamento equivalentes, exportada uma fotografia somente leitura do projeto e preservado/verificado backup do banco local anterior. Importação transacional de 15 tabelas e 76 linhas, incluindo fotos, IDs de auditoria, dispositivos e tentativas de login. Substituída a conta provisória pelos três usuários da origem, preservando UUIDs, e-mails e hashes bcrypt. Adicionado suporte a bcrypt e alinhados limite de login (10 por usuário/60 por IP em cinco minutos), regras de usuário, permissões de teste e capacidades com a origem. Nenhuma alteração foi enviada ao Supabase nem ao GitHub.
+
+As 125 colunas foram conferidas contra metadados atuais; todos os valores das 76 linhas foram comparados após gravar, incluindo precisão temporal, JSON e binários. Adicionadas 31 traduções de CHECK e cinco regras de gatilhos (quatro gatilhos SQL, com as duas regras de frota reunidas). Funções PL/pgSQL/RPC e controle por usuário continuam adaptados à API local, sem equivalência binária entre os bancos. O APK em uso permanece apontando ao Supabase. As cópias são independentes após a exportação.
+
+Validação: simulação com rollback, igualdade persistida, 28 verificações de integração SQL Server, 33 verificações diferenciais contra as definições das funções exportadas do banco vivo, autenticação/origem/catálogo por HTTP, painel em Chrome isolado e suíte completa existente do projeto. Os testes não deixam dados operacionais na base. Material reservado da exportação e relatórios detalhados ficam em sqlserver/exports, ignorado pelo Git.
+
+
+## 2026-11-05 — Cópia local com SQL Server
+
+Adicionado backend local opcional, selecionado por SQL_API_URL no build, preservando o fluxo Supabase padrão. Banco app_abencoada, com 15 tabelas de domínio (125 colunas) e autenticação local em app_auth. O esquema PostgreSQL public corresponde a app. API local parametrizada, com scrypt, tokens armazenados como hash, limite de login e transações serializadas para regras de permissões, leituras, registradoras, checklists, fotos e recuperação de exclusões. Não houve publicação, importação de dados atuais nem distribuição de APK.
+
+Validação: 28 verificações de integração real no SQL Server, com rollback de todos os dados de teste; login e painel em Chrome isolado; builds web e móvel; suíte existente do projeto. Adicionado LF explícito para testes no Windows. Exportador de migração somente leitura e importador JSON com simulação/reversão, recusa de destino com dados operacionais e reconciliação de contagens. Importação real ainda depende do backup e revisão de precisão decimal. A API usa leitura de tabelas em transação serializada e requer avaliação de volume antes de produção. Detalhes em sqlserver/README.md.
+
 
 ## 2026-10-29 — Orientação vertical fixa no Android
 
