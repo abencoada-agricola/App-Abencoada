@@ -1,3 +1,4 @@
+import {apiErrorMessage} from './api-v1-errors.js';
 // HTTP contract supplied by Luiz; no SQL credentials or legacy RPC fallback.
 export function createApiV1Client({url,storage=globalThis.localStorage,fetcher=globalThis.fetch,now=Date.now}){
  const base=url.replace(/\/+$/,''),key='abencoada-api-v1-auth:'+base;
@@ -11,7 +12,8 @@ export function createApiV1Client({url,storage=globalThis.localStorage,fetcher=g
    const raw=response.status===204?'':await response.text();let data;
    try{data=raw?JSON.parse(raw):null}catch{throw Object.assign(Error('Resposta inválida do servidor. Os registros continuam salvos.'),{code:'INVALID_API_RESPONSE',status:response.status})}
    if(!response.ok){const detail=data?.error,header=response.headers.get('Retry-After');let retryAt;if(header){const seconds=Number(header);retryAt=Number.isFinite(seconds)?now()+Math.max(0,seconds)*1000:Date.parse(header);}
-    throw Object.assign(Error(detail?.message||'A API não concluiu a solicitação.'),{status:response.status,code:detail?.code||'HTTP_ERROR',fields:detail?.fields||[],context:detail?.context||{},requestId:data?.request_id,retryAt:Number.isFinite(retryAt)?retryAt:undefined,data});}
+    const code=path==='/api/v1/auth/login'&&response.status===401?'INVALID_CREDENTIALS':detail?.code||'HTTP_ERROR';
+    throw Object.assign(Error(apiErrorMessage({status:response.status,code,fields:detail?.fields,context:detail?.context})),{status:response.status,code,fields:detail?.fields||[],context:detail?.context||{},requestId:data?.request_id,retryAt:Number.isFinite(retryAt)?retryAt:undefined,data});}
    return data;
   }catch(error){if(error.name==='TypeError'||error.name==='AbortError')throw Object.assign(Error('Não foi possível conectar. Os registros continuam salvos neste aparelho.'),{code:'NETWORK_ERROR'});throw error}finally{clearTimeout(timer)}
  }

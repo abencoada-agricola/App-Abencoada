@@ -14,7 +14,7 @@ const nodes=new Map();
 const element=()=>({hidden:false,disabled:false,innerHTML:'',classList:{contains(){return false},toggle(){},add(){},remove(){}},focus(){this.focused=true}});
 for(const id of ['#login-logo','#header-logo','#header-details','#header-user','#open-settings','#open-observation','#form-error','#occurrence-form [name="notes"]'])nodes.set(id,element());
 const captured=[],saved=[];
-const state={useV1:false,configureSystemBars(){},reportDelivery(){},requestDeliveryNotifications:async()=>({enabled:false}),loginLoading:(button,loading)=>{button.disabled=loading},locked:false,localAccess:{refresh:async()=>{},requireOnline:async()=>{}},screen:'menu',context:{},fixedContext:null,contextNext:'methods',mode:'manual',draft:{},editId:null,occurrenceReturn:null,photoBusy:false,queue:[],selected:null,message:'',syncIssue:null,connected:true,busy:false,needsLogin:false,nativeConfigured:false,
+const state={useV1:false,configureSystemBars(){},reportDelivery(){},requestDeliveryNotifications:async()=>({enabled:false}),loginLoading:(button,loading)=>{button.disabled=loading},locked:false,localAccess:{refresh:async()=>{},requireOnline:async()=>{}},screen:'menu',context:{},fixedContext:null,contextNext:'methods',mode:'manual',draft:{},editId:null,occurrenceReturn:null,contextReturn:null,photoBusy:false,queue:[],selected:null,message:'',syncIssue:null,connected:true,busy:false,needsLogin:false,nativeConfigured:false,
  session:{user:{id:'operator',name:'OPERADOR',permissions:all},fleets:[],locations:[],materials:[],rules:{checklistEnabled:true}},
  app:{...element(),scrollTop:0},logout:element(),connectionStatus:element(),
  document:{body:element(),querySelector:selector=>nodes.get(selector)||null,querySelectorAll:()=>[]},
@@ -89,6 +89,12 @@ state.fixedContext=null;state.context={};state.screen='menu';state.renderFlow();
 assert.equal(nodes.get('#header-user').textContent,state.session.user.name);assert.ok(!state.app.innerHTML.includes('home-brand'));
 vm.runInContext(source.slice(source.indexOf('function connectionHTML(){'),source.indexOf('function statusHTML(){')),state);state.session.cachedAt='2026-10-29T09:00:00Z';assert.doesNotMatch(state.connectionHTML(),/<time|2026/);
 console.log('Menu/checklist/occurrences skip context; refuel and transfer require it only when unselected, resume their own workflow, permit returning, preserve queues/drafts and handle storage failure.');
+
+// Editing a pending refuel's context must return to that correction, with the same submission ID.
+nodes.set('#edit-context',element());state.session.fleets=[{id:'22',active:true}];state.selected=state.session.fleets[0];state.screen='refuel';state.mode='manual';state.editId='pending-refuel';state.context={localCode:'12',materialCode:'9',workFront:'TESTE'};state.draft={km:'78001',engine:'29001',liters:'5,50'};state.renderFlow();
+nodes.get('#edit-context').onclick();assert.equal(state.screen,'context');contextForm.values={localCode:'12',materialCode:'9',workFront:''};await contextForm.onsubmit({preventDefault(){}});
+assert.equal(state.screen,'refuel');assert.equal(state.editId,'pending-refuel');assert.equal(state.selected.id,'22');assert.equal(state.draft.liters,'5,50');assert.equal(state.context.workFront,'');assert.equal(state.contextReturn,null);
+console.log('Pending refuel context corrections preserve the submission identity, readings and liters, including clearing an unsupported work front.');
 
 // New transfers omit fleet, even with a stale draft/form value; corrections retain legacy links.
 state.session.user.permissions=all;state.session.fleets=[];state.screen='transfer';state.context={localCode:'1',materialCode:'9'};state.fixedContext={...state.context};state.editId=null;state.queue=[];state.draft={transfer:{fleet:'STALE',recorderEnd:'10050',destination:'2'}};state.renderFlow();

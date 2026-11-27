@@ -1,6 +1,7 @@
 import {config} from './config.js';
 import {createApiV1Client} from './api-v1-client.js';
 import {validateBootstrap,decimalString} from './api-v1-models.js';
+import {hydrateSavedFleetReadings} from './api-v1-readings.js';
 export const client=createApiV1Client({url:config.url||''});
 export const isConfigured=()=>config.backend==='api-v1'&&/^https?:\/\//.test(config.url);
 export const signIn=client.signIn,signOut=client.signOut,getAuthUserId=client.userId;
@@ -8,6 +9,7 @@ export const changePassword=client.changePassword;
 export const requestV1=client.request;
 const enc=encodeURIComponent;
 let snapshot=null,members=[];
+const readingDetails=new Map();let readingOwner=null;
 export async function fieldApi(){throw Error('Use o aplicativo Android autenticado para registrar operações.');}
 function operation(o){const d=o.data||{},readings=d.readings||{};return {...d,apiV1:true,id:o.id,submission_id:o.submission_id,kind:o.kind,state:o.state,operator:o.operator||'',fleet:d.fleet_code||o.fleet_code||'',date:d.date||o.captured_at?.slice(0,10),created_at:o.captured_at,received_at:o.received_at,liters:d.liters==null?undefined:Number(d.liters),...Object.fromEntries(Object.entries(readings).map(([k,v])=>[k,Number(v)])),capture_mode:'quick',measured_fields:d.meter_fields||{},destination:d.destination_code,recorder_liters:d.liters==null?undefined:Number(d.liters),answers:d.answers?.map(a=>({...a,id:a.question_id,text:snapshot?.checklistTemplates.find(t=>t.fleet===d.fleet_code&&t.version===d.template_version)?.questions.find(q=>q.id===a.question_id)?.text||'Pergunta histórica'})),resolutions:d.resolutions||{},has_photo:d.has_photo,removal_reason:o.removal_reason};}
 async function operations(kind,state='active'){
@@ -35,7 +37,9 @@ export async function api(path,options={}){
  const [route,query]=path.split('?'),p=options.body?JSON.parse(options.body):null,params=new URLSearchParams(query);
  if(route==='session'){
   const auth=client.session();if(auth?.password_change_required)throw Object.assign(Error('Troque sua senha temporária para continuar.'),{code:'PASSWORD_CHANGE_REQUIRED'});
-  snapshot=validateBootstrap(await client.request('/api/v1/bootstrap'),auth?.user?.id,client.base);return snapshot;
+  if(readingOwner!==auth?.user?.id){readingDetails.clear();readingOwner=auth?.user?.id;}
+  const fresh=validateBootstrap(await client.request('/api/v1/bootstrap'),auth?.user?.id,client.base);
+  snapshot=await hydrateSavedFleetReadings(fresh,client,{previous:snapshot,detailCache:readingDetails});return snapshot;
  }
  if(route==='device-register')return client.request('/api/v1/devices',{method:'POST',body:{device_id:p.deviceId}});
  if(route==='records'){if(options.method==='POST')throw Error('Envie registros pelo aplicativo Android.');return params.has('id')?operation(await client.request('/api/v1/operations/'+enc(params.get('id')))):{records:await operations('refuel')};}

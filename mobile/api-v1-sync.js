@@ -1,4 +1,5 @@
 import {assertReceipt} from '../web/api-v1-models.js';
+import {apiErrorMessage} from '../web/api-v1-errors.js';
 export async function deliverV1(record,{request,persist,now=Date.now}){
  if(record.deliveryState==='needs_review'||record.deliveryState==='blocked'||record.retryAt>now())return null;
  try{
@@ -10,8 +11,8 @@ export async function deliverV1(record,{request,persist,now=Date.now}){
   return assertReceipt(await request('/api/v1/operations',{method:'POST',body:record.command}),record);
  }catch(error){
   record.deliveryState=[401,403].includes(error.status)?'blocked':[409,422].includes(error.status)&&error.code!=='IDEMPOTENCY_CONFLICT'?'needs_review':'unknown';
-  record.retryAt=error.retryAt||now()+30000;record.lastSendError=error.message;
-  if(record.deliveryState==='needs_review')record.error=error.message;
+  record.retryAt=error.retryAt||now()+30000;record.errorCode=error.code;record.errorStatus=error.status;record.errorContext=error.context||{};record.errorFields=error.fields||[];record.lastSendError=apiErrorMessage(error);
+  if(record.deliveryState==='needs_review')record.error=record.lastSendError;
   await persist(record);throw error;
  }
 }

@@ -1,3 +1,13 @@
+## 2026-11-27 — Erros em português e leituras anteriores
+
+A API v1 deixa de exibir mensagens técnicas recebidas do servidor. Códigos conhecidos e falhas desconhecidas usam textos controlados em português, tanto no envio em primeiro plano quanto no serviço Android. A fila antiga é traduzida na apresentação, sem reescrever seus comandos. Conflitos novos preservam código, campos e referências numéricas para orientar a correção. A rejeição de Frente de Trabalho recebe orientação própria; a API pública ainda retorna 422 para data.work_front.
+
+O catálogo inicial não inclui os últimos medidores salvos. A sessão agora consulta operações de abastecimento aceitas e ativas, busca os detalhes mais recentes disponíveis por medidor e guarda as leituras no cache offline da conta. Leituras de metadados do GMAIS não são usadas como substitutas. Operadores veem apenas o histórico autorizado pela API, com indicação dessa limitação. Falha de atualização preserva leituras anteriores da mesma conta/conexão e mostra aviso. Seleções abertas acompanham a sessão atualizada.
+
+Alterar local/frente durante a correção de um abastecimento retorna ao próprio formulário, preservando identificação do envio, leituras e litros. O comando só é revisado ao confirmar a correção, sem excluir pendências.
+
+Validação: testes de erros, histórico/cache e navegação; quatro operações em navegador com servidor sintético; compilação Android; testes nativos no Nothing Phone (1), Android 17. No aparelho, login online/offline, ocorrência salva sem internet e enviada após reconexão, rejeição de litros zero e exibição de KM 78.000/horímetro 29.000 foram conferidos. A API real confirmou conflito de leitura (409, KM de referência 51.000) e rejeição da extensão work_front (422). Captura da câmera abriu com prévia preta e não foi confirmada. Atualização operacional exige APK com a assinatura original; cópias de teste usam pacotes separados e preservam o aplicativo instalado.
+
 ## 2026-11-26 — Ambiente oficial e documentação publicada
 
 API v1 em https://gmaiserp-api.gmais-sistemas.com.br adotada para o site e o Android, com APP_ABENCOADA como banco definido pelo projeto e conexão SQL administrada pelo provedor. O README registra URL, login, CORS, builds e publicação. Site e APK 2.0.79 tiveram login e consultas verificados. CORS de https://localhost liberado. A homologação de gravações reais e do cadastro de frentes permanece pendente.
