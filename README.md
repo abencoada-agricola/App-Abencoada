@@ -6,6 +6,16 @@ Aplicativo Android para abastecimentos, transferências, ocorrências e checklis
 - [Baixar APK Android](https://github.com/abencoada-agricola/App-Abencoada/releases/latest/download/abencoada.apk)
 - [Documentação da API](https://gmaiserp-api.gmais-sistemas.com.br/docs)
 
+## Melhorias e correções — 27/11/2026
+
+- **Valores anteriores restaurados:** KM, horímetro do motor e horímetro do elevador são consultados dos abastecimentos aceitos e ativos. Os valores ficam salvos por conta para uso offline. Ausência de histórico é indicada sem apresentar zero como leitura confirmada.
+- **Erros em português:** conflitos, validações, sessão expirada, falta de permissão e falhas de conexão/servidor usam mensagens próprias, inclusive na fila antiga e no envio Android em segundo plano. Quando a API informa referências numéricas, elas aparecem na orientação de correção.
+- **Correção de pendências:** alterar local, material ou Frente de Trabalho retorna ao abastecimento em edição, mantendo identificação, leituras e litros. O registro continua salvo até a confirmação do servidor.
+- **Câmera dentro do aplicativo:** prévia, captura e cancelamento passam a funcionar no próprio Abençoada, evitando a falha observada na câmera externa Nothing no Android 17. A câmera é liberada após fotografar ou cancelar. A galeria continua disponível.
+- **Sincronização conferida no aparelho:** gravação sem internet, reabertura, reconexão e envio com o aplicativo em segundo plano foram testados, sem limpar dados do celular.
+
+Para operadores, a API limita o histórico aos registros autorizados para a conta. O aplicativo informa essa limitação; a validação definitiva das referências continua no servidor.
+
 ## Ambiente oficial
 
 | Configuração | Valor |
@@ -76,11 +86,15 @@ Uma atualização somente de documentação mantém o APK já publicado quando n
 
 ## Verificações realizadas
 
-Em 26/11/2026, o site publicado efetuou login e carregou o painel pela API. O APK oficial 2.0.79 foi instalado como atualização no emulador, efetuou login e exibiu CONECTADO. Os testes preservaram os dados locais. A suíte completa do cliente passou antes da publicação.
+Em 27/11/2026, os testes físicos foram realizados em um Nothing Phone (1), Android 17, com a versão corrigida 2.0.82. Foram confirmados login online e offline, abastecimento manual e por QR Code, os três tipos de medidor, cálculo pela registradora, transferência, checklist com sete respostas, ocorrência com foto da galeria e foto capturada no app. Uma ocorrência criada sem internet chegou à API com o aplicativo em segundo plano. As duas pendências encontradas no início foram corrigidas com dados fictícios e enviadas, mantendo os registros.
 
-A validação confirmou autenticação e consultas. O aceite de gravações reais, a equivalência completa com a base anterior e a integração dos cadastros do GMAIS continuam dependendo de homologação específica.
+A suíte automatizada completa, o teste de navegador com câmera simulada e quatro operações, a compilação assinada e quatro testes Android instrumentados também passaram. A versão de distribuição é definida pelo workflow; use o link de download no início deste documento.
 
-Frente de Trabalho já está preparada no cliente. A documentação pública recebida ainda precisa incorporar a consulta de frentes por código e nome e confirmar o suporte ao campo no envio de abastecimentos.
+### Limitação atual: Frente de Trabalho
+
+O cliente está preparado para enviar Frente de Trabalho, mas a API pública retornou **422** para o campo data.work_front durante o teste real. O aplicativo explica o bloqueio em português e preserva a pendência. Para enviar sem essa informação, deixe o campo vazio em **Conferir e corrigir**. O suporte completo ao campo e à consulta de frentes depende da atualização do provedor da API.
+
+Os testes foram feitos com registros fictícios no ambiente do aplicativo. A equivalência completa com a base anterior e a integração dos cadastros do GMAIS continuam dependendo de homologação específica.
 
 ## Preservação de registros offline
 

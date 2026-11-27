@@ -1,3 +1,11 @@
+## 2026-11-27 — Validação física e leitura do histórico
+
+O cliente API v1 complementa o catálogo inicial com operações aceitas de abastecimento para obter leituras anteriores por medidor. O cache de detalhes é limitado à conta autenticada; falhas de atualização retêm leituras da mesma conta, perfil e conexão, com aviso na tela. Operadores continuam sujeitos ao histórico visível permitido pela API. Não substituir essas leituras por metadados GMAIS.
+
+A captura de ocorrência usa getUserMedia, com encerramento das faixas de vídeo ao capturar, cancelar ou ocultar a tela. No Nothing Phone (1), Android 17, a câmera externa Nothing falhou ao configurar a prévia; a captura interna e o envio de foto de 960 × 1280 foram confirmados. Em navegador isolado, node tests/api-v1-browser.mjs usa câmera simulada para validar captura e cancelamento junto aos quatro fluxos de operação.
+
+A API real aceita login e operações, mas rejeita data.work_front com 422. O tratamento em português informa como manter o registro salvo ou corrigir o campo; não descartar o valor automaticamente para forçar envio. A variante sqlEmulator usa origem http://localhost e não representa o CORS HTTPS de produção. Testes físicos devem preservar o app operacional e usar pacote separado com a configuração HTTPS para validar alterações antes do APK assinado.
+
 ## Situação atual — 26/11/2026
 
 A API oficial é https://gmaiserp-api.gmais-sistemas.com.br, no modo api-v1. O banco definido é APP_ABENCOADA e a conexão SQL é responsabilidade do provedor. O site e o APK oficial 2.0.79 tiveram autenticação e consultas verificadas. As origens do site e https://localhost responderam com CORS autorizado. Consulte o README da raiz para a configuração atual. Os relatos de preparação e bloqueios abaixo registram estados anteriores.
