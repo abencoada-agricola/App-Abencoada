@@ -18,6 +18,7 @@ import {freezeRecord,assertBackendTransition,assertReceipt} from '../web/api-v1-
 import {deliverV1} from './api-v1-sync.js';
 import {apiErrorMessage} from '../web/api-v1-errors.js';
 import {retainSavedFleetReadings} from '../web/api-v1-readings.js';
+import {captureOccurrencePhoto} from './camera.js';
 const useV1=config.backend==='api-v1',v1Client=createApiV1Client({url:config.url||''});
 async function inspectV1Transition(){const records=await op('queue','readonly',s=>s.getAll());const nativeState=Capacitor.isNativePlatform()?await OfflineSync.inspect():{};assertBackendTransition(records,nativeState,v1Client.base);return {records,nativeState};}
 async function guardV1Login(){const state=await inspectV1Transition();return userId=>{if(state.records.some(r=>r.userId!==userId)||(state.nativeState.queue?.length||state.nativeState.acks?.length)&&state.nativeState.userId!==userId)throw Error('Há registros pendentes de outra conta. Entre na conta original.');};}
@@ -224,17 +225,17 @@ function renderFlow(){
 function photoHTML(){return isPhoto(draft.photo)?`<img class="occurrence-photo" src="${esc(draft.photo)}" alt="FOTO ANEXADA À OCORRÊNCIA"><button type="button" class="photo-button" id="remove-photo">REMOVER FOTO</button>`:''}
 function bindPhotoControls(){
  const camera=document.querySelector('#camera-photo'),gallery=document.querySelector('#gallery-photo');
- document.querySelector('#take-photo').onclick=()=>camera.click();document.querySelector('#choose-photo').onclick=()=>gallery.click();
+ document.querySelector('#take-photo').onclick=async()=>{if(!navigator.mediaDevices?.getUserMedia){camera.click();return}try{const file=await captureOccurrencePhoto();if(file)await attach(file)}catch(error){document.querySelector('#photo-status').textContent=error.message}};document.querySelector('#choose-photo').onclick=()=>gallery.click();
  const preview=document.querySelector('#photo-preview');
  const bindRemove=()=>{const remove=document.querySelector('#remove-photo');if(remove)remove.onclick=async()=>{delete draft.photo;await saveDraft();preview.innerHTML='';camera.value='';gallery.value=''}};bindRemove();
- for(const input of [camera,gallery])input.onchange=async()=>{
-  const file=input.files[0];if(!file)return;
+ async function attach(file){
   photoBusy=true;const buttons=[...document.querySelectorAll('button')].map(button=>({button,disabled:button.disabled}));buttons.forEach(({button})=>button.disabled=true);
   const status=document.querySelector('#photo-status');status.textContent='PREPARANDO FOTO…';
   try{const photo=await preparePhoto(file);const previous=draft.photo;draft.photo=photo;try{await saveDraft()}catch(error){draft.photo=previous;throw Error('Não foi possível salvar a foto no celular. Libere espaço e tente novamente.')};preview.innerHTML=photoHTML();bindRemove();status.textContent='FOTO ADICIONADA.'}
   catch(error){status.textContent=error.message}
-  finally{photoBusy=false;buttons.forEach(({button,disabled})=>button.disabled=disabled);input.value=''}
- };
+  finally{photoBusy=false;buttons.forEach(({button,disabled})=>button.disabled=disabled)}
+ }
+ for(const input of [camera,gallery])input.onchange=async()=>{const file=input.files[0];if(!file)return;try{await attach(file)}finally{input.value=''}};
 }
 function updateCalculated(){
  const base=recorderBase(session.locations||[],queue,context.localCode,context.materialCode,editId);

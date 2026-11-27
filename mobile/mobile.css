@@ -127,3 +127,5 @@ body.login-screen #app-version{color:var(--muted)}
 #login .auth-field label{color:var(--muted);font-weight:400}#login .auth-field input:focus+label,#login .auth-field input:not(:placeholder-shown)+label{color:var(--focus)}
 .muted{color:var(--muted)}a,.metric-note{color:var(--accent)}.capacity-warning{background:var(--warning-bg);color:var(--warning-ink)}
 @media(prefers-reduced-motion:reduce){.auth-field label{transition:none}}
+
+.capture-panel{position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;gap:12px;padding:calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));background:#193c2b;color:#fff;overflow:auto}.capture-panel h2{margin:0;font-size:1.2rem;text-align:center}.capture-panel video{width:100%;min-height:0;flex:1;object-fit:contain;background:#000}.capture-panel p{margin:0;text-align:center}.capture-panel button{flex-shrink:0}.capture-panel .primary{background:#fff;color:#193c2b}

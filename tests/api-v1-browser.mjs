@@ -37,12 +37,12 @@ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const base='htt
 let browser;
 try{
  for(const file of ['scripts/build-mobile.mjs','scripts/build.mjs']){const r=spawnSync(process.execPath,[file],{env:{...process.env,APP_BACKEND:'api-v1',API_V1_URL:base,REQUIRE_HTTPS:'false'},encoding:'utf8'});assert.equal(r.status,0,r.stderr);}
- console.log('Built local fixtures at '+base);browser=await chromium.launch({channel:'chrome',headless:true});
+ console.log('Built local fixtures at '+base);browser=await chromium.launch({channel:'chrome',headless:true,args:['--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream']});
  const context=await browser.newContext({viewport:{width:412,height:915},serviceWorkers:'block'});let page=await context.newPage();page.on('pageerror',e=>pageErrors.push(e.message));
  await context.route('**/*',route=>route.request().url().startsWith(base)?route.continue():route.abort());
  await page.goto(base+'/mobile/index.html');await page.locator('#login [name=username]').fill('teste');await page.locator('#login [name=password]').fill('senha-sintetica');await page.locator('#login button[type=submit]').click();await page.locator('[data-workflow=methods]').waitFor();
  await page.waitForFunction(()=>document.querySelector('#connection-status')?.textContent.includes('CONECTADO'));
- await page.locator('#open-observation').click();await page.locator('#occurrence-form [name=notes]').fill('OCORRÊNCIA SINTÉTICA');await page.locator('#occurrence-form button[type=submit]').click();
+ await page.locator('#open-observation').click();await page.locator('#occurrence-form [name=notes]').fill('OCORRÊNCIA SINTÉTICA');await page.locator('#take-photo').click();await page.locator('#capture-photo:not([disabled])').waitFor();await page.locator('#cancel-capture').click();assert.equal(await page.locator('.capture-panel').count(),0);await page.locator('#take-photo').click();await page.locator('#capture-photo:not([disabled])').waitFor();await page.locator('#capture-photo').click();await page.locator('.occurrence-photo').waitFor();assert.equal(await page.locator('.capture-panel').count(),0);await page.locator('#occurrence-form button[type=submit]').click();
  await page.waitForFunction(()=>document.querySelector('#pending')?.textContent.includes('1 AGUARDANDO'));
  await page.waitForTimeout(300);assert.equal(records.size,1);assert.equal([...records.values()][0].command.kind,'occurrence');
  // Advance only this isolated test queue's retry deadline, preserving the captured command.
