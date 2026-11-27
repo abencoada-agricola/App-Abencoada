@@ -1,3 +1,7 @@
+## 2026-11-27 — Origem da Frente de Trabalho esclarecida
+
+Registrado o requisito de consultar o cadastro indicado do GMAIS em outro banco do mesmo servidor, por leitura na API. O fluxo pretendido usa seleção de código/descrição e catálogo offline, com gravação no APP_ABENCOADA. O texto livre preparado anteriormente não implementa esse catálogo. Mapeamento da origem e acesso ao código/publicação ficam com o responsável pela API. Nenhum banco foi consultado ou alterado nesta definição.
+
 ## 2026-11-27 — Confirmação com texto Obrigado
 
 A pedido do usuário, apenas o corpo da confirmação Android foi simplificado para **Obrigado**, sem pontuação. Vale para envio individual, em lote e tela bloqueada. Mantidas as regras de confirmação de recebimento e deduplicação. Validação: teste existente de notificações aprovado.

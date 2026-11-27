@@ -1,3 +1,18 @@
+## 2026-11-27 — Frente de Trabalho pelo cadastro do GMAIS
+
+O usuário indicou como origem https://gmaisagro.gmais-sistemas.com.br/operacionais/agricola/prestacao-servicos/local-servico e informou que esses dados ficam no banco do site GMAIS, separado do APP_ABENCOADA, no mesmo servidor. O mapeamento da origem fica com o responsável pela API. Nome do banco, esquema, tabela/view e campos ainda precisam ser confirmados; o caminho da tela não comprova nomes SQL.
+
+Fluxo requerido: banco GMAIS → consulta autorizada somente para leitura na API → catálogo de códigos e descrições no app → frente selecionada associada ao abastecimento no APP_ABENCOADA.
+
+Requisitos:
+- Confirmar banco, tabela/view, identificador, código, descrição, empresa/filial e situação dos cadastros.
+- Fornecer catálogo autenticado na API, por rota documentada ou pelo bootstrap, respeitando o acesso de cada conta.
+- Adaptar o app para selecionar código/descrição e manter catálogo offline, preservando pendências.
+- Guardar a identificação externa e a descrição histórica no banco do app e retorná-las nos detalhes e relatórios.
+- Manter compatibilidade com registros antigos, comandos de reenvio e recibos. A extensão textual work_front atual não define essa integração de catálogo.
+
+Situação: consulta entre bancos, catálogo na API e seleção no app ainda não implementados nem homologados. Dependem do mapeamento e do código/processo de publicação da API hospedada. Nenhum banco GMAIS foi consultado ou alterado nesta definição.
+
 ## Situação atual — 26/11/2026
 
 A API oficial é https://gmaiserp-api.gmais-sistemas.com.br, no modo api-v1. O banco definido é APP_ABENCOADA e a conexão SQL é responsabilidade do provedor. O site e o APK oficial 2.0.79 tiveram autenticação e consultas verificadas. As origens do site e https://localhost responderam com CORS autorizado. Consulte o README da raiz para a configuração atual. Os relatos de preparação e bloqueios abaixo registram estados anteriores.

@@ -93,7 +93,9 @@ A suíte automatizada completa, o teste de navegador com câmera simulada e quat
 
 ### Limitação atual: Frente de Trabalho
 
-O cliente está preparado para enviar Frente de Trabalho, mas a API pública retornou **422** para o campo data.work_front durante o teste real. O aplicativo explica o bloqueio em português e preserva a pendência. Para enviar sem essa informação, deixe o campo vazio em **Conferir e corrigir**. O suporte completo ao campo e à consulta de frentes depende da atualização do provedor da API.
+A Frente de Trabalho deve vir do cadastro existente no GMAIS, indicado pelo usuário na tela [Local de Serviço](https://gmaisagro.gmais-sistemas.com.br/operacionais/agricola/prestacao-servicos/local-servico). A origem informada é outro banco no mesmo servidor. A API deverá consultá-la somente para leitura e fornecer códigos e descrições ao aplicativo; a seleção ficará associada ao abastecimento no APP_ABENCOADA.
+
+O cliente atual oferece texto livre e a API pública retornou **422** para data.work_front. A consulta do catálogo na API e a seleção no aplicativo ainda precisam ser implementadas. O mapeamento do banco e da tabela/view fica com o responsável pela API. O [requisito de integração](docs/api-v1/README.md) registra a origem, o catálogo offline e a preservação das pendências.
 
 Os testes foram feitos com registros fictícios no ambiente do aplicativo. A equivalência completa com a base anterior e a integração dos cadastros do GMAIS continuam dependendo de homologação específica.
 
