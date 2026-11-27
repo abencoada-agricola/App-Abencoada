@@ -1,3 +1,7 @@
+## 2026-11-27 — Confirmação com texto Obrigado
+
+A pedido do usuário, apenas o corpo da confirmação Android foi simplificado para **Obrigado**, sem pontuação. Vale para envio individual, em lote e tela bloqueada. Mantidas as regras de confirmação de recebimento e deduplicação. Validação: teste existente de notificações aprovado.
+
 ## 2026-11-27 — Texto da notificação de envio
 
 A confirmação Android passa a mostrar exatamente **Envio registrado, obrigado.**, tanto para um registro quanto para um lote e na versão pública da notificação. O aviso continua restrito a recebimentos confirmados pelo servidor; registros apenas salvos no aparelho não geram essa confirmação. Nenhuma regra de reenvio, recibo, deduplicação ou preservação da fila foi alterada.
