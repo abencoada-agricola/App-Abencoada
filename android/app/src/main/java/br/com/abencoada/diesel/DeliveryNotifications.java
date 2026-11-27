@@ -59,9 +59,9 @@ public class DeliveryNotifications extends Plugin {
    Intent intent=context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
    if(intent==null)return;intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
    PendingIntent open=PendingIntent.getActivity(context,0,intent,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
-   android.app.Notification publicNotice=new NotificationCompat.Builder(context,CHANNEL).setSmallIcon(R.drawable.ic_delivery).setContentTitle("Abençoada").setContentText("Envio confirmado. Seus registros foram recebidos.").build();
+   android.app.Notification publicNotice=new NotificationCompat.Builder(context,CHANNEL).setSmallIcon(R.drawable.ic_delivery).setContentTitle("Abençoada").setContentText("Envio registrado, obrigado.").build();
    android.app.Notification notification=new NotificationCompat.Builder(context,CHANNEL).setSmallIcon(R.drawable.ic_delivery).setContentTitle(count==1?"Registro enviado":"Registros enviados")
-    .setContentText(count==1?"A administração confirmou o recebimento do registro.":count+" registros recebidos pela administração.")
+    .setContentText("Envio registrado, obrigado.")
     .setContentIntent(open).setAutoCancel(true).setVisibility(NotificationCompat.VISIBILITY_PRIVATE).setPublicVersion(publicNotice).setPriority(NotificationCompat.PRIORITY_DEFAULT).build();
    NotificationManagerCompat.from(context).notify(NOTIFICATION_ID,notification);
   }}catch(Exception ignored){android.util.Log.w("Abencoada","Não foi possível mostrar a confirmação de envio.");}

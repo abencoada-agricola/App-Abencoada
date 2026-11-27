@@ -1,3 +1,9 @@
+## 2026-11-27 — Texto da notificação de envio
+
+A confirmação Android passa a mostrar exatamente **Envio registrado, obrigado.**, tanto para um registro quanto para um lote e na versão pública da notificação. O aviso continua restrito a recebimentos confirmados pelo servidor; registros apenas salvos no aparelho não geram essa confirmação. Nenhuma regra de reenvio, recibo, deduplicação ou preservação da fila foi alterada.
+
+Validação: teste existente de notificações/recibos aprovado; atualização do mapa local sem mudança de topologia.
+
 ## 2026-11-27 — Erros em português e leituras anteriores
 
 A API v1 deixa de exibir mensagens técnicas recebidas do servidor. Códigos conhecidos e falhas desconhecidas usam textos controlados em português, tanto no envio em primeiro plano quanto no serviço Android. A fila antiga é traduzida na apresentação, sem reescrever seus comandos. Conflitos novos preservam código, campos e referências numéricas para orientar a correção. A rejeição de Frente de Trabalho recebe orientação própria; a API pública ainda retorna 422 para data.work_front.

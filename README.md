@@ -9,6 +9,7 @@ Aplicativo Android para abastecimentos, transferências, ocorrências e checklis
 ## Melhorias e correções — 27/11/2026
 
 - **Valores anteriores restaurados:** KM, horímetro do motor e horímetro do elevador são consultados dos abastecimentos aceitos e ativos. Os valores ficam salvos por conta para uso offline. Ausência de histórico é indicada sem apresentar zero como leitura confirmada.
+- **Notificação de envio:** após a confirmação de recebimento pelo servidor, o texto é **Envio registrado, obrigado.**, inclusive para envio em lote.
 - **Erros em português:** conflitos, validações, sessão expirada, falta de permissão e falhas de conexão/servidor usam mensagens próprias, inclusive na fila antiga e no envio Android em segundo plano. Quando a API informa referências numéricas, elas aparecem na orientação de correção.
 - **Correção de pendências:** alterar local, material ou Frente de Trabalho retorna ao abastecimento em edição, mantendo identificação, leituras e litros. O registro continua salvo até a confirmação do servidor.
 - **Câmera dentro do aplicativo:** prévia, captura e cancelamento passam a funcionar no próprio Abençoada, evitando a falha observada na câmera externa Nothing no Android 17. A câmera é liberada após fotografar ou cancelar. A galeria continua disponível.
